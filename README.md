@@ -77,6 +77,12 @@ In production this could be replaced with Prophet, ARIMA, or a dedicated forecas
 
 ## Setup
 
+Tested runtime for this repository:
+
+- `Python 3.14`
+
+Install dependencies in a virtual environment:
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate
@@ -98,6 +104,26 @@ uvicorn app.main:app --reload
 Open:
 
 - `http://127.0.0.1:8000/docs`
+
+## Quick Smoke Test
+
+Verify the main MVP flow step by step:
+
+```bash
+curl "http://127.0.0.1:8000/health"
+curl "http://127.0.0.1:8000/kpi?brand=BrandA"
+curl "http://127.0.0.1:8000/forecast?product=ProductA1"
+curl -X POST "http://127.0.0.1:8000/ask" \
+  -H "Content-Type: application/json" \
+  -d '{"question":"Create a presentation for BrandA with forecast for the next quarter and include product ProductA1"}'
+```
+
+Expected result:
+
+- health endpoint returns `{"status":"ok"}`
+- KPI endpoint returns the latest KPI snapshot for `BrandA`
+- forecast endpoint returns the next three forecast months for `ProductA1`
+- ask endpoint returns KPI + forecast JSON and writes a PowerPoint file to `output/BrandA_business_review.pptx`
 
 ## Example Calls
 
@@ -124,6 +150,10 @@ curl -X POST "http://127.0.0.1:8000/ask" \
 Output:
 
 - PowerPoint deck written to `output/BrandA_business_review.pptx`
+
+Note:
+
+- If the prompt does not explicitly mention a product, the parser defaults to `ProductA1` and returns that choice in `parser_warnings`
 
 ## Governance Perspective
 
