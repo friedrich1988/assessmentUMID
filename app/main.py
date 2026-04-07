@@ -1,14 +1,20 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse, HTMLResponse
 
 from app.forecast import forecast_product
+from app.frontend import render_frontend
 from app.models import AskRequest
 from app.ppt_generator import build_presentation
 from app.prompt_parser import parse_question
 from app.transform import build_data_products, get_kpi_for_brand, get_market_slide_data
+
+BASE_DIR = Path(__file__).resolve().parents[1]
+OUTPUT_DIR = BASE_DIR / "output"
 
 
 @asynccontextmanager
@@ -23,6 +29,11 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+
+@app.get("/", response_class=HTMLResponse)
+def home() -> str:
+    return render_frontend()
 
 
 @app.get("/health")
@@ -71,3 +82,15 @@ def ask_copilot(request: AskRequest) -> dict:
         "forecast": forecast if parsed["wants_forecast"] else None,
         "presentation_file": presentation_file,
     }
+
+
+@app.get("/presentation/{brand}")
+def download_presentation(brand: str) -> FileResponse:
+    presentation_path = OUTPUT_DIR / f"{brand}_business_review.pptx"
+    if not presentation_path.exists():
+        raise HTTPException(status_code=404, detail=f"No presentation found for brand: {brand}")
+    return FileResponse(
+        presentation_path,
+        media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        filename=presentation_path.name,
+    )

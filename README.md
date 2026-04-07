@@ -40,9 +40,12 @@ Implemented:
 2. Transform to KPI data
 3. Run a simple forecast model using linear regression
 4. Expose API endpoints
+   - `GET /`
+   - `GET /health`
    - `GET /kpi?brand=BrandA`
    - `GET /forecast?product=ProductA1`
    - `POST /ask`
+   - `GET /presentation/{brand}`
 5. Parse a natural-language request via a rule-based prompt parser
 6. Generate a PowerPoint presentation with:
    - Title slide
@@ -103,7 +106,23 @@ uvicorn app.main:app --reload
 
 Open:
 
+- `http://127.0.0.1:8000/`
 - `http://127.0.0.1:8000/docs`
+
+## Minimal Frontend
+
+The MVP includes a small browser-based frontend served directly by FastAPI:
+
+- `/` -> one-page control panel for KPI, forecast, and prompt-driven deck generation
+- `/presentation/{brand}` -> direct download for the latest generated PowerPoint deck for that brand
+
+Recommended demo flow in the browser:
+
+1. Open `http://127.0.0.1:8000/`
+2. Click `Load KPI`
+3. Click `Load Forecast`
+4. Click `Generate Deck`
+5. Click `Download Latest Deck`
 
 ## Quick Smoke Test
 
@@ -124,6 +143,7 @@ Expected result:
 - KPI endpoint returns the latest KPI snapshot for `BrandA`
 - forecast endpoint returns the next three forecast months for `ProductA1`
 - ask endpoint returns KPI + forecast JSON and writes a PowerPoint file to `output/BrandA_business_review.pptx`
+- the browser frontend at `/` can execute the same flow without using `curl`
 
 ## Example Calls
 
